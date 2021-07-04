@@ -1,3 +1,18 @@
+Python application CICD process:-
+
+We have flask application hosted on a port, 5000.
+DockerFile which is to contanerized the appliction, I have tried to use both K8s and AWS for deployment .
+In k8s , I have used minikube , reason , easy to use and spin up time is less , I was not able to have my personal AWS account activated so had to choose this way.
+jenkinsfile(declarative) is our build server, we hae the steps defined , which include:-
+    cloning the code, checking for requuired files, mandatory variable that has to be passed in to the pipeline from Job
+    resolving dependency from internal server(Ex- Proget), building code , running sonar coverage , publishing the package
+    We can have log being push to kibana so to give all team access for the build and deployment log.
+
+    We are also deploying the code in dev environment.
+
+K8s Deployment - based on tag provided it will try to deploy it in either k8s or AWS using Ansible
+
+
 Techstack used :-
 
 Ansible - CM tool
@@ -6,7 +21,8 @@ K8s/ Minikube - Container Orchestrator
 
 App Lang: Python
 
-Server: Flask`
+Server: Flask
+
 
 `
 I will try to answer everything on AWS perspective as most of my experience is on AWS

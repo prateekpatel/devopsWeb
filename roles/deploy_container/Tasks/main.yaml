@@ -4,6 +4,10 @@
         shell: hostname -i
         register: hostmachine
 
+      - name: Temaplate Service
+        template: src="deployment.yaml.j2" dest="deployment.yaml"
+        delegate_to: localhost
+
       - name: apply kubernetes deployment
         shell: "kubectl apply -f deployment.yaml"
         register: result

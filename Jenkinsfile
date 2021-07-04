@@ -25,6 +25,9 @@ pipeline {
         stage('Test'){
             steps{
                 sh ''
+                if (testResult == 'Failed') {
+                    error "test failed"
+        }
             }
         }
         stage('Sonar Scan'){
@@ -38,15 +41,68 @@ pipeline {
             }
         }
         stage('Build Image'){
-            steps{
-                sh 'docker build -t cartrawler#{buildnumber}'
+            parallel {
+                stage("Buidl Image Kubernetese") {
+                    when{
+                        expression {params.deployment_type == "kubernetse"}
+                    }
+                    steps{
+                        sh 'docker build -t cartrawler#{buildnumber}'
+                }
+                }
+                stage("Buidl Image aws") {
+                    when{
+                        expression {params.deployment_type == "aws"}
+                    }
+                    steps{
+                        sh 'docker build -t #{param.ecrendpoint}cartrawler#{buildnumber}'
+                }
+                }
+
+            
+            }
+        
+        stage('Push Image'){
+                when {
+                   expression { params.deployment_type == "kubernetse" }
+                }
+                steps{
+                sh 'docker push cartrawler#{buildnumber}'
+            }
+        
+        stage('Push Image ECR'){
+                when {
+                   expression { params.deployment_type == "aws" }
+                }
+                steps{
+                sh 'docker push cartrawler#{buildnumber}'
+            }
+        
+        }
+
+        stage ('prepare variable for dev deployment'){
+            when{
+                expression { params.deployment_type == "aws" }
+            steps {
+                sh '''
+                echo "region: ${REGION}" > extra_vars.yml
+                echo "account_id: ${REGION}" >> extra_vars.yml
+                echo "security_group: ${SECURITY_GROUP}" >> extra_vars.yml
+                echo "subnet: ${SUBNET}" >> extra_vars.yml
+                echo environment: development  >> extra_vars.yml
+                echo  version  : #{params.Deploy_version}
+                echo role_arn: #{params.role_arn}
+
+                '''
+            }
+
             }
         }
         stage('Deploy to Dev'){
             steps{
-               sh """ansible-playbook  \
-               --extra-vars "environment=development version=#{params.Deploy_version} role_arn=#{role_arn}"
-               deploy_container.yml -vv"""
+               sh '''ansible-playbook  
+               --extra-vars "@extra_vars.yml"
+               deploy_container.yml -vv --tag "#{params.deployment_type}'''
             }
         }
     }

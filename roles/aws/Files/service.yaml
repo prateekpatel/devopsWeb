@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >
+  [Service Catalog] This template deploys an python service of the specified Image. 
+
+Parameters:
+  EcsClusterName:
+    Type: String
+    Description: Specifies the ECS Cluster Name with which the resources would be associated
+    Default: default
+
+  Env:
+    Type: String
+    Description: Specifies the environment
+    
+  EcsContainerMemory:
+    Type: Number
+    Default: 
+    Description: How much memory in megabytes to give the container running  service
+
+  EcsContainerCpu:
+    Type: Number
+    Default: 
+    Description: How much CPU to give the container running . 1024 is 1 CPU
+    
+
+  LoadBalancerTargetGroupArn:
+    Description: Provide the ALB Target Group ARN.
+    Type: String
+  
+  ServiceImage:
+    Description: ECS container Image.
+    Type: String
+
+
+  DBPassword:
+    Description: Provide the password for the  RDS Database 
+    Type: String
+    NoEcho: true
+
+  DBEndpoint:
+    Description: Provide the RDS Server endpoint.
+    Type: String
+
+  DBName:
+    Description: Provide the DB Name.
+    Type: String
+
+  DBPort:
+    Description: Provide the RDS Server Port.
+    Type: String
+
+  DBUser:
+    Description: Provide the  database UserName.
+    Type: String
+
+
+
+
+Resources:
+  ECSLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName : !Join ['', ['/', !Ref Env,'/cartrawler/python/ecs-service/']]
+      RetentionInDays: 30
+    
+  PythonServerNodeTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: "ECS-Deploy-Service"
+      ContainerDefinitions:
+        - Name: 'python-service'        
+          Image: !Ref ServiceImage
+          Cpu: !Ref EcsContainerCpu
+          memoryReservation: !Ref EcsContainerMemory
+          Essential: true
+          Environment:
+            - Name: ACCEPT_EULA
+              Value: Y
+            - Name: DB_CONNECTION_STRING
+              Value: !Join ['', ['Server=', !Ref DBEndpoint,',',!Ref DBPort,';','Database=', !Ref DBName,';', 'User=', !Ref DBUser, ';','Password=', !Ref DBPassword ]]
+          PortMappings:
+            - ContainerPort: 8080
+          LogConfiguration:
+            LogDriver: 'awslogs'
+            Options:
+              awslogs-group: !Ref ECSLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: !Join ['', ['/', !Ref Env,'/cartrawler/python/ecs-service/', !Ref 'EcsClusterName']]
+      
+  PythonServerService:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: "PythonTest"
+      Cluster:
+        Ref: EcsClusterName
+      LaunchType: EC2
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: !Ref DesiredCount
+      HealthCheckGracePeriodSeconds: 600
+      TaskDefinition:
+        Ref: "PythonServerNodeTaskDefinition"
+      PlacementStrategies:
+        - Type: "spread"
+          Field: "attribute:ecs.availability-zone"
+      LoadBalancers:
+        - ContainerName: 'python-service'
+          ContainerPort: 8080
+          TargetGroupArn: !Ref LoadBalancerTargetGroupArn
+
+Outputs:
+  PythonServerService:
+    Description: ECS Service Name
+    Value: !Ref   PythonServerService

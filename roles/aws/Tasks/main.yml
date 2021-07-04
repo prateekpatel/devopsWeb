@@ -1,0 +1,15 @@
+---
+- name: create a cloudformation stack
+  amazon.aws.cloudformation:
+    stack_name: {{cft_name}}
+    state: "present"
+    region: "us-east-1"
+    disable_rollback: true
+    template: "files/cloudformation-example.json"
+    template_parameters:
+      EcsClusterName: "jmartin"
+      Env: "ephemeral"
+      EcsContainerMemory: "m1.small"
+      EcsContainerCpu: 3
+    tags:
+      Stack: "ansible-cloudformation"

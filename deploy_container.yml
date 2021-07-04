@@ -3,4 +3,10 @@
   connection: local
   gather_facts: no
   roles:
-    - deploy_container
+    - role: deploy_container
+      tags: 
+        - Kubernetse
+    - role: deploy_service
+      tags:
+         - aws 
+

@@ -1,0 +1,17 @@
+---
+  tasks:
+      - name: fetch the ip of the instance
+        shell: hostname -i
+        register: hostmachine
+
+      - name: apply kubernetes deployment
+        shell: "kubectl apply -f deployment.yaml"
+        register: result
+
+      - name: Check Service Status
+        uri:
+          url: "{{hostmachine}}//:"
+        register: output
+        until: (output.json == "hello world")
+        retries: 20
+        delay: 30

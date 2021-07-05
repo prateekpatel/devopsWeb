@@ -5,11 +5,11 @@
     state: "present"
     region: "us-east-1"
     disable_rollback: true
-    template: "files/cloudformation-example.json"
+    template: "files/service.json"
     template_parameters:
-      EcsClusterName: "jmartin"
-      Env: "ephemeral"
+      EcsClusterName: "python"
+      Env: "envvalue"
       EcsContainerMemory: "m1.small"
-      EcsContainerCpu: 3
+      EcsContainerCpu: 2
     tags:
       Stack: "ansible-cloudformation"

@@ -33,28 +33,6 @@ Parameters:
     Type: String
 
 
-  DBPassword:
-    Description: Provide the password for the  RDS Database 
-    Type: String
-    NoEcho: true
-
-  DBEndpoint:
-    Description: Provide the RDS Server endpoint.
-    Type: String
-
-  DBName:
-    Description: Provide the DB Name.
-    Type: String
-
-  DBPort:
-    Description: Provide the RDS Server Port.
-    Type: String
-
-  DBUser:
-    Description: Provide the  database UserName.
-    Type: String
-
-
 
 
 Resources:
@@ -75,10 +53,8 @@ Resources:
           memoryReservation: !Ref EcsContainerMemory
           Essential: true
           Environment:
-            - Name: ACCEPT_EULA
+            - Name: X
               Value: Y
-            - Name: DB_CONNECTION_STRING
-              Value: !Join ['', ['Server=', !Ref DBEndpoint,',',!Ref DBPort,';','Database=', !Ref DBName,';', 'User=', !Ref DBUser, ';','Password=', !Ref DBPassword ]]
           PortMappings:
             - ContainerPort: 8080
           LogConfiguration:

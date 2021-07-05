@@ -38,18 +38,20 @@ I will try to answer everything on AWS perspective as most of my experience is o
 3. How you monitor the application to ensure constant uptime?
    Grafana, we can see how many containers are healthy , what are the utilization , status 
    of underline reaources.
+   Application logs will get published to cloudwatch.
    
 4. What security concerns would need to be addressed?
     Instance security group, only LB should be allowed to talk to the service on the given port 
     range, load balancer security group open only to listen on specific port.
+    Resource should be in proper subnet. Ex - DB has to be in private subnet , Instance - in Nat subnet (based on requirment)
     Roles - Instance should have limited access.
     
 5. What if the application needed a DB? How would you handle this?
     We can create a DB and then pass the connection string as an environment variable.
     
 6. What would your automated testing approach be?
-    Once container is deployed , checking the endpoint if it's active , Again Application load
-    balancer do this for us.
+    Every microserice should serve an uri EX - "health" with an http response and with the application version.
+    we can have ansible to hit at the endpoint and  do a match with the version we are deploying , making sure application version is upgraded and we have 200 response.
     
     
 7. Could you list the infrastructure tools that you would use?

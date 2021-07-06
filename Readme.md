@@ -34,8 +34,10 @@ I will try to answer everything on AWS perspective as most of my experience is o
     
 2. What tools/strategy would you use for logging?
 
-    We can use cloudwatch agent to enable logging which can be viewed on the kibana, we can 
-    also create data source in grafana to have the state visualize.
+
+    We can use kinesis firehose to publish all the build and deployment log in kibana.
+    cloudwatch agent - to enable application logging 
+    we cab create data source in grafana to have the data visualize.
     
 3. How you monitor the application to ensure constant uptime?
 
